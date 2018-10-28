@@ -9,6 +9,10 @@ behavior.
 2. ICP: (Iterative Closest Points)
 3. libQGLViewer
 
+**Compilation**
+Presently, there is a Makefile in the distribution which the user needs to modify.
+After proper paths to various libraries have been set, just write "make" on the
+command line and the executab;e "sam" will be generated.
 
 **Usages**
 1. Given a mesh model M, translate and rotate it to some desired position. 
