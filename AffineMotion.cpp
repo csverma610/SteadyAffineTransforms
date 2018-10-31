@@ -37,13 +37,9 @@ void AffineMotion:: readAffinityMatrix( const string &filename)
     for( int i = 0; i < 4; i++)
         ifile >> aa(i,0) >> aa(i,1) >> aa(i,2) >> aa(i,3);
 
-    A = aa.transpose();   // Shizuo, the author of AfflineLib helped..
-
-    cout << A << endl;
+    A = aa.transpose();   // Prof. Shizuo Kaji, the author of AfflineLib helped..
 
     logA =  AffineLib::logSEc(A);
-
-    cout << logA << endl;
 
     startPos = {0.0, 0.0, 0.0};
     endPos   = {A(3,0), A(3,1), A(3,2)};
@@ -275,8 +271,6 @@ void Mesh::saveAs( const std::string &filename)
                   << f->nodes[1]->id +1 << " "
                   << f->nodes[2]->id +1 << endl;
     }
-
-    cout << "Info: Cutout written to file: " << filename << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -290,7 +284,7 @@ void AffineMotion::mult( Eigen::Matrix4d &At, Mesh &msh)
         vec[1] = srcmesh.nodes[i]->xyz[1];
         vec[2] = srcmesh.nodes[i]->xyz[2];
         vec[3] = 1.0;
-        auto x = At.transpose()*vec;
+        auto x = At.transpose()*vec;  // Prof. Kaji helped me here.
         msh.nodes[i]->xyz[0] = x[0];
         msh.nodes[i]->xyz[1] = x[1];
         msh.nodes[i]->xyz[2] = x[2];
