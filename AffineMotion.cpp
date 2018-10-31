@@ -33,13 +33,20 @@ void AffineMotion:: readAffinityMatrix( const string &filename)
 {
     ifstream ifile( filename.c_str(), ios::in);
 
+    Eigen::Matrix4d aa;
     for( int i = 0; i < 4; i++)
-        ifile >> A(i,0) >> A(i,1) >> A(i,2) >> A(i,3);
+        ifile >> aa(i,0) >> aa(i,1) >> aa(i,2) >> aa(i,3);
+
+    A = aa.transpose();   // Shizuo, the author of AfflineLib helped..
+
+    cout << A << endl;
 
     logA =  AffineLib::logSEc(A);
 
+    cout << logA << endl;
+
     startPos = {0.0, 0.0, 0.0};
-    endPos   = {A(0,3), A(1,3), A(2,3)};
+    endPos   = {A(3,0), A(3,1), A(3,2)};
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -283,7 +290,7 @@ void AffineMotion::mult( Eigen::Matrix4d &At, Mesh &msh)
         vec[1] = srcmesh.nodes[i]->xyz[1];
         vec[2] = srcmesh.nodes[i]->xyz[2];
         vec[3] = 1.0;
-        auto x = At*vec;
+        auto x = At.transpose()*vec;
         msh.nodes[i]->xyz[0] = x[0];
         msh.nodes[i]->xyz[1] = x[1];
         msh.nodes[i]->xyz[2] = x[2];
@@ -325,17 +332,6 @@ void AffineMotion::keyPressEvent( QKeyEvent *e)
         if( t <= 1.0) {
             At  = AffineLib::expSE(t*logA);
             mult( At, currmesh);
-            std::array<float,3> translate;
-            translate[0] = (1-t)*startPos[0] + t*endPos[0];
-            translate[1] = (1-t)*startPos[1] + t*endPos[1];
-            translate[2] = (1-t)*startPos[2] + t*endPos[2];
-	    camera()->setSceneCenter( qglviewer::Vec(translate[0], translate[1], translate[2]));
-	    camera()->lookAt( qglviewer::Vec(translate[0], translate[1], translate[2]));
-            for( auto v : currmesh.nodes) {
-                v->xyz[0] += translate[0];
-                v->xyz[1] += translate[1];
-                v->xyz[2] += translate[2];
-            }
             update();
         }
         return;
