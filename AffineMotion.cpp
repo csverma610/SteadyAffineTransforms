@@ -247,6 +247,16 @@ void AffineMotion::keyPressEvent( QKeyEvent *e)
         return;
     }
 
+    if( e->key() == Qt::Key_R) {
+	    nstep = 1;
+            double t = nstep*dt;
+            if( t <= 1.0) {
+            At  = AffineLib::expSE(t*logA);
+            mult( At, currmesh);
+            update();
+            }
+            return;
+    }
     if( e->key() == Qt::Key_Home) {
         qglviewer::Vec pos;
         pos[0]  = srcmesh.center[0];
@@ -285,23 +295,6 @@ void AffineMotion::mouseReleaseEvent( QMouseEvent *e)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AffineMotion::drawNodes()
-{
-    glDisable( GL_LIGHTING);
-    glPointSize(2);
-    glColor3f( 0.0, 0.0, 1.0);
-
-    /*
-    glBegin(GL_POINTS);
-    for( auto v: mesh.nodes) {
-        if(v->active) glVertex3fv( &v->xyz[0]);
-    }
-    glEnd();
-    */
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 void AffineMotion::drawFaces(Mesh &themesh)
 {
     if( useLights ) glEnable(GL_LIGHTING);
@@ -327,8 +320,6 @@ void AffineMotion::draw()
 
     glPolygonOffset(1.0,1.0);
     glEnable(GL_POLYGON_OFFSET_LINE);
-
-    drawNodes();
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     glColor3f( 1.0, 0.0, 0.0);

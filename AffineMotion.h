@@ -228,8 +228,6 @@ private:
     double dt;
     int    nstep = 0;
 
-    void drawIDs();
-    void drawNodes();
     void drawFaces(Mesh &themesh);
     Eigen::Matrix4d A, logA, At;
 
