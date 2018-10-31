@@ -14,7 +14,6 @@
 #include <QKeyEvent>
 #include <Eigen/Dense>
 
-
 class Node;
 typedef std::shared_ptr<Node> NodePtr;
 
@@ -189,13 +188,8 @@ inline FacePtr Face:: newObject(NodePtr &n0, NodePtr &n1, NodePtr &n2)
 
 struct Mesh
 {
-    void refine( FacePtr &f);
-    void flip(   EdgePtr &e);
-
     EdgePtr addEdge( NodePtr &n0, NodePtr &n1, FacePtr &f);
     void    addFace( FacePtr &f);
-    void    remove(FacePtr &f);
-    void    pruneAll();
 
     std::vector<NodePtr> nodes;
     std::vector<EdgePtr> edges;
@@ -217,7 +211,6 @@ public:
 protected:
     virtual void draw();
     virtual void init();
-    virtual void drawWithNames();
     virtual void keyPressEvent( QKeyEvent *e);
     virtual void mousePressEvent( QMouseEvent *e);
     virtual void mouseReleaseEvent( QMouseEvent *e);

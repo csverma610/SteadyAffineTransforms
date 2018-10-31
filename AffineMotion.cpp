@@ -27,23 +27,27 @@ EdgePtr Mesh:: addEdge( NodePtr &n0, NodePtr &n1, FacePtr &face)
     edges.push_back(newedge);
     return newedge;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-void AffineMotion:: readAffinityMatrix( const string &filename)
+
+void Mesh::addFace( FacePtr &newface)
 {
-    ifstream ifile( filename.c_str(), ios::in);
+    assert( newface );
+    auto n0 = newface->nodes[0]; assert( n0 );
+    auto n1 = newface->nodes[1]; assert( n1 );
+    auto n2 = newface->nodes[2]; assert( n2 );
+    assert((n0 != n1) && (n1 != n2) && (n2 != n0));
 
-    Eigen::Matrix4d aa;
-    for( int i = 0; i < 4; i++)
-        ifile >> aa(i,0) >> aa(i,1) >> aa(i,2) >> aa(i,3);
+    newface->edges[0] = addEdge(n0,n1,newface);
+    newface->edges[1] = addEdge(n1,n2,newface);
+    newface->edges[2] = addEdge(n2,n0,newface);
 
-    A = aa.transpose();   // Prof. Shizuo Kaji, the author of AfflineLib helped..
+    n0->faces.push_back(newface);
+    n1->faces.push_back(newface);
+    n2->faces.push_back(newface);
 
-    logA =  AffineLib::logSEc(A);
-
-    startPos = {0.0, 0.0, 0.0};
-    endPos   = {A(3,0), A(3,1), A(3,2)};
+    faces.push_back(newface);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void AffineMotion:: readMesh( const string &filename)
@@ -132,109 +136,20 @@ void AffineMotion:: readMesh( const string &filename)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Mesh::addFace( FacePtr &newface)
+void AffineMotion:: readAffinityMatrix( const string &filename)
 {
-    assert( newface );
-    auto n0 = newface->nodes[0]; assert( n0 );
-    auto n1 = newface->nodes[1]; assert( n1 );
-    auto n2 = newface->nodes[2]; assert( n2 );
-    assert((n0 != n1) && (n1 != n2) && (n2 != n0));
+    ifstream ifile( filename.c_str(), ios::in);
 
-    newface->edges[0] = addEdge(n0,n1,newface);
-    newface->edges[1] = addEdge(n1,n2,newface);
-    newface->edges[2] = addEdge(n2,n0,newface);
+    Eigen::Matrix4d aa;
+    for( int i = 0; i < 4; i++)
+        ifile >> aa(i,0) >> aa(i,1) >> aa(i,2) >> aa(i,3);
 
-    n0->faces.push_back(newface);
-    n1->faces.push_back(newface);
-    n2->faces.push_back(newface);
+    A = aa.transpose();   // Prof. Shizuo Kaji, the author of AfflineLib helped..
 
-    faces.push_back(newface);
-}
+    logA =  AffineLib::logSEc(A);
 
-////////////////////////////////////////////////////////////////////////////////
-void Mesh::remove( FacePtr &oldface)
-{
-    for( int i = 0; i < 3; i++) {
-        auto e = oldface->edges[i];
-        if( e->faces[0] == oldface) {
-            e->faces[0] = e->faces[1];
-            e->faces[1] = nullptr;
-        }
-        if( e->faces[1] == oldface) {
-            e->faces[1] = nullptr;
-        }
-    }
-
-    for( int i = 0; i < 3; i++) {
-        auto v  = oldface->nodes[i];
-        if( !v->faces.empty() ) {
-            auto it = std::remove(v->faces.begin(), v->faces.end(), oldface);
-            v->faces.erase(it, v->faces.end() );
-        }
-    }
-
-    oldface->active = 0;
-
-}
-////////////////////////////////////////////////////////////////////////////////
-void Mesh::flip( EdgePtr &e)
-{
-
-    if( !e->active ) return;
-    if( e->faces[0] == nullptr || e->faces[0] == nullptr) return;
-
-    auto n0  = e->nodes[0];
-    auto n1  = e->nodes[1];
-    auto f0  = e->faces[0];
-    auto f1  = e->faces[1];
-    auto on0 = f0->getOpposite( n0, n1);
-    auto on1 = f1->getOpposite( n0, n1);
-    double d0 = length2(n0,n1);
-    double d1 = length2(on0,on1);
-
-    if( d0 < d1) return;
-
-    double theta0 = f0->getAngleAt(on0);
-    double theta1 = f1->getAngleAt(on1);
-
-    if( theta0 + theta1 < 180) return;
-
-    remove(f0);
-    remove(f1);
-
-    f0 = Face::newObject(n0, on0, on1);
-    f1 = Face::newObject(n1, on1, on0);
-
-    addFace(f0);
-    addFace(f1);
-
-    e->active = 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void Mesh::refine( FacePtr &f)
-{
-    assert(f);
-
-    if(f->active) {
-        if(f->getArea() > 1.0E-10) {
-            remove(f);
-
-            NodePtr newnode = Node::newObject();
-            newnode->xyz    = f->getCentroid();
-            newnode->id     = nodes.size();
-            nodes.push_back(newnode);
-
-            FacePtr f0 = Face::newObject( f->nodes[0], f->nodes[1], newnode);
-            FacePtr f1 = Face::newObject( f->nodes[1], f->nodes[2], newnode);
-            FacePtr f2 = Face::newObject( f->nodes[2], f->nodes[0], newnode);
-
-            addFace(f0);
-            addFace(f1);
-            addFace(f2);
-        }
-    }
+    startPos = {0.0, 0.0, 0.0};
+    endPos   = {A(3,0), A(3,1), A(3,2)};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,6 +189,7 @@ void Mesh::saveAs( const std::string &filename)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void AffineMotion::mult( Eigen::Matrix4d &At, Mesh &msh)
 {
     int numnodes = srcmesh.nodes.size();
@@ -289,8 +205,8 @@ void AffineMotion::mult( Eigen::Matrix4d &At, Mesh &msh)
         msh.nodes[i]->xyz[1] = x[1];
         msh.nodes[i]->xyz[2] = x[2];
     }
-
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void AffineMotion::keyPressEvent( QKeyEvent *e)
@@ -368,6 +284,7 @@ void AffineMotion::mouseReleaseEvent( QMouseEvent *e)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void AffineMotion::drawNodes()
 {
     glDisable( GL_LIGHTING);
@@ -398,11 +315,6 @@ void AffineMotion::drawFaces(Mesh &themesh)
             glEnd();
         }
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void AffineMotion::drawWithNames()
-{
 }
 
 ////////////////////////////////////////////////////////////////////////////////
