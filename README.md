@@ -9,6 +9,7 @@ behavior.
 
 **Acknowledgemt**
 I received great help from Prof. Shizuo Kaji from Kyushu University. He explained me how to use AffineLib library.
+Dr. Mayank Singh gave the motivation to develop this code.
 
 
 **External libraries:**
@@ -24,8 +25,9 @@ command line and the executab;e "sam" will be generated.
 **Usages**
 1. Given a mesh model M, translate and rotate it to some desired position. 
 2. Using ICP calculate the Affinity Matrix "A" and store it in "model.xf".
+   (icp srcmodel.off dstmodel.off will the 4X4 matrix)
 3. Use command line
-       sam model.off model.xf
+       sam srcmodel.off model.xf  
 4. Press "N" to see the next position of the model.
 
 
