@@ -4,6 +4,13 @@ The is the preliminary implementation of "Steady Affine Motions and Morphs" by J
 a 3D object and the Affinity Matrix A, it calculates the intermediate positions of the model without unexpected
 behavior.
 
+
+In the following image, the "Red" bunny is the source model (at t=0.0). The "Blue" bunny is translated, rotated, 
+and scaled (at t = 1.0) The "Green" bunny is the intermediate model at some parameter "t". The Smooth Affine transform
+brings the Red bunny towards the blue bunny smoothly and intuitively. With linear and SLERP methods, the intermediate
+steps can show some surprises which may be confusing or unintuitive. 
+
+
 ![alt text](./example.png "Title")
 
 
@@ -29,6 +36,11 @@ command line and the executab;e "sam" will be generated.
 3. Use command line
        sam srcmodel.off model.xf  
 4. Press "N" to see the next position of the model.
+
+
+**LiCense** LSFA (Let Science be Free for All)
+But please find bugs, improve the code and contribute to open-source.
+No acknowledgment of this work is required. 
 
 
 
