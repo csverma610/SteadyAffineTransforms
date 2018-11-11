@@ -120,6 +120,7 @@ struct Face {
     int  id;
     std::array<NodePtr,3> nodes;
     std::array<EdgePtr,3> edges;
+    std::array<float,3>   normal;
 };
 
 inline std::array<float,3> Face :: getCentroid() const
@@ -186,6 +187,45 @@ inline FacePtr Face:: newObject(NodePtr &n0, NodePtr &n1, NodePtr &n2)
     return f;
 }
 
+template<class T>
+inline double magnitude( const std::array<T,3> &A )
+{
+    return sqrt( A[0]*A[0] + A[1]*A[1] + A[2]*A[2] );
+}
+
+template<class T>
+inline std::array<T,3> make_vector( const std::array<T,3> &head, const std::array<T,3> &tail)
+{
+    std::array<T,3> V;
+    V[0] = head[0] - tail[0];
+    V[1] = head[1] - tail[1];
+    V[2] = head[2] - tail[2];
+    return V;
+}
+
+template<class T>
+inline std::array<T,3> cross_product( const std::array<T,3> &A, const std::array<T,3> &B)
+{
+    std::array<T,3> C;
+    C[0] = A[1]*B[2] - A[2]*B[1];
+    C[1] = A[2]*B[0] - A[0]*B[2];
+    C[2] = A[0]*B[1] - A[1]*B[0];
+    return C;
+}
+
+template<class T>
+inline std::array<T,3> normal( const std::array<T,3> &A, const std::array<T,3> &B, const std::array<T,3> &C)
+{
+    std::array<T,3> BA = make_vector(B,A);
+    std::array<T,3> CA = make_vector(C,A);
+    std::array<T,3> cprod = cross_product(BA, CA);
+    double  mag = magnitude(cprod);
+    cprod[0] /= mag;
+    cprod[1] /= mag;
+    cprod[2] /= mag;
+    return cprod;
+}
+
 struct Mesh
 {
     EdgePtr addEdge( NodePtr &n0, NodePtr &n1, FacePtr &f);
@@ -194,6 +234,8 @@ struct Mesh
     std::vector<NodePtr> nodes;
     std::vector<EdgePtr> edges;
     std::vector<FacePtr> faces;
+
+    void setSurfaceNormals();
 
     double radius;
     void saveAs( const std::string &s);

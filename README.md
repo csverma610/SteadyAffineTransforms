@@ -4,6 +4,9 @@ The is the preliminary implementation of "Steady Affine Motions and Morphs" by J
 a 3D object and the Affinity Matrix A, it calculates the intermediate positions of the model without unexpected
 behavior.
 
+![alt text](./example.png "Title")
+
+
 **Acknowledgemt**
 I received great help from Prof. Shizuo Kaji from Kyushu University. He explained me how to use AffineLib library.
 

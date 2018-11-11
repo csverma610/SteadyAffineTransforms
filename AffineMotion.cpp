@@ -49,6 +49,15 @@ void Mesh::addFace( FacePtr &newface)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void Mesh::setSurfaceNormals()
+{
+    for( auto f: faces) {
+        auto p0 = f->nodes[0]->xyz;
+        auto p1 = f->nodes[1]->xyz;
+        auto p2 = f->nodes[2]->xyz;
+        f->normal = normal(p0,p1,p2);
+    }
+}
 
 void AffineMotion:: readMesh( const string &filename)
 {
@@ -132,6 +141,10 @@ void AffineMotion:: readMesh( const string &filename)
         dstmesh.faces[i] = newface;
     }
     dt = 1.0/(double)maxSteps;
+
+    srcmesh.setSurfaceNormals();
+    currmesh.setSurfaceNormals();
+    dstmesh.setSurfaceNormals();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,14 +261,14 @@ void AffineMotion::keyPressEvent( QKeyEvent *e)
     }
 
     if( e->key() == Qt::Key_R) {
-	    nstep = 1;
-            double t = nstep*dt;
-            if( t <= 1.0) {
+        nstep = 1;
+        double t = nstep*dt;
+        if( t <= 1.0) {
             At  = AffineLib::expSE(t*logA);
             mult( At, currmesh);
             update();
-            }
-            return;
+        }
+        return;
     }
     if( e->key() == Qt::Key_Home) {
         qglviewer::Vec pos;
@@ -302,6 +315,7 @@ void AffineMotion::drawFaces(Mesh &themesh)
     for ( auto f : themesh.faces) {
         if(f->active) {
             glBegin(GL_TRIANGLES);
+	    glNormal3fv( &f->normal[0]);
             glVertex3fv( &f->nodes[0]->xyz[0] );
             glVertex3fv( &f->nodes[1]->xyz[0] );
             glVertex3fv( &f->nodes[2]->xyz[0] );
@@ -321,7 +335,7 @@ void AffineMotion::draw()
     glPolygonOffset(1.0,1.0);
     glEnable(GL_POLYGON_OFFSET_LINE);
 
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
     glColor3f( 1.0, 0.0, 0.0);
     drawFaces(srcmesh);
 
@@ -329,11 +343,9 @@ void AffineMotion::draw()
     drawFaces(dstmesh);
 
     if( nstep ) {
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
         glColor3f( 0.0, 1.0, 0.0);
         drawFaces(currmesh);
     }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
