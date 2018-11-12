@@ -11,7 +11,7 @@ steps can show some surprises which may be confusing or unintuitive.
 
 ![alt text](./example.png "Title")
 
-Download Animation [Movie] (./example.mp4)
+Download Animation [Movie] (https://github.com/csverma610/SteadyAffineTransforms/example.mp4)
 
 
 ## Acknowledgemts:
